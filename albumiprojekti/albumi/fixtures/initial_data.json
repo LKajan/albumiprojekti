@@ -1,0 +1,107 @@
+[
+{
+  "pk": 1, 
+  "model": "auth.user", 
+  "fields": {
+    "username": "admin", 
+    "first_name": "", 
+    "last_name": "", 
+    "is_active": true, 
+    "is_superuser": true, 
+    "is_staff": true, 
+    "last_login": "2014-01-27T19:14:21.297Z", 
+    "groups": [], 
+    "user_permissions": [], 
+    "password": "pbkdf2_sha256$12000$DmGl8FYAuJ5H$tbEyTzgB7g5sxBCKwjq81JIku2S0q7dr7Q0QNZZznvA=", 
+    "email": "admin@albumi.fi", 
+    "date_joined": "2014-01-27T19:14:21.297Z"
+  }
+},
+{
+  "pk": 2, 
+  "model": "auth.user", 
+  "fields": {
+    "username": "Tester", 
+    "first_name": "Tester", 
+    "last_name": "Tetson", 
+    "is_active": true, 
+    "is_superuser": false, 
+    "is_staff": false, 
+    "last_login": "2014-01-27T19:20:31.021Z", 
+    "groups": [], 
+    "user_permissions": [], 
+    "password": "pbkdf2_sha256$12000$EAhP3gEDJB63$EHG5ZyuhXsaXG1NNvze9Bd4Zm9qUcYtAqon56X6FiEo=", 
+    "email": "tester.tetson@aalto.fi", 
+    "date_joined": "2014-01-27T19:20:31.021Z"
+  }
+},
+{
+    "pk": 1,
+    "model": "albumi.albumi", 
+    "fields": {
+        "nimi": "Ensimm\u00e4inen testialbumi", 
+        "kayttaja": 2, 
+        "koko_y": 595, 
+        "koko_x": 842
+    }
+},
+{
+    "pk": 1, 
+    "model": "albumi.sivu", 
+    "fields": {
+        "albumi": 1, 
+        "sivunumero": 0
+    }
+},
+{
+    "pk": 2, 
+    "model": "albumi.sivu", 
+    "fields": {
+        "albumi": 1, 
+        "sivunumero": 1
+    }
+},
+{
+    "pk": 3, 
+    "model": "albumi.sivu", 
+    "fields": {
+        "albumi": 1, 
+        "sivunumero": 2
+    }
+},
+{
+    "pk": 1, 
+    "model": "albumi.kuva", 
+    "fields": {
+        "url": "https://drive.google.com/uc?export=view&id=0BwbdYcPHdb1pMXU3MDM4b2xiSTg", 
+        "nimi": ""
+    }
+},
+{
+    "pk": 1, 
+    "model": "albumi.sivunelementti", 
+    "fields": {
+        "sivu": 1, 
+        "teksti": null, 
+        "ankkuripiste_y": 50, 
+        "ankkuripiste_x": 50, 
+        "koko_y": 412, 
+        "koko_x": 640, 
+        "elementinTyyppi": "", 
+        "kuva": 1
+    }
+},
+{
+    "pk": 1, 
+    "model": "albumi.tilaus", 
+    "fields": {
+        "albumi": 1, 
+        "kayttaja": 1, 
+        "tilausAika": "2014-01-27T14:50:00Z", 
+        "hinta": 109.45, 
+        "albuminKoko_x": 209, 
+        "albuminKoko_y": 297, 
+        "maksettu": false
+    }
+}
+]
