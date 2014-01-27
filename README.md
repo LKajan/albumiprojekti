@@ -27,8 +27,9 @@ git clone https://github.com/Aalto-U-Web-Software-Development-course/group-23-20
 virtualenv env
 env/bin/activate
 pip install -r src/requirements.txt
+cd src/albumiprojekti
 manage.py syncdb --noinput
-manage.py migrate
+manage.py migrate albumi
 ```
 
 ### Eclipse-projektin luominen
