@@ -103,7 +103,7 @@ Sivuilla on elementtejä, jotka voivat sisältää kuvan tai tekstiä. Elementil
 -- ankkuripiste
 -- venytys, kierto yms.
 
-### Näkymät
+### Näkymät 
 
 __Hahmoteltuja näkymiä ja ryhmiä:__  
 * Albumin käsittely
