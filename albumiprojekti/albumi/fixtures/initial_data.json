@@ -88,7 +88,23 @@
         "koko_y": 412, 
         "koko_x": 640, 
         "elementinTyyppi": "", 
-        "kuva": 1
+        "kuva": 1,
+        "z" : 0
+    }
+},
+{
+    "pk": 2, 
+    "model": "albumi.sivunelementti", 
+    "fields": {
+        "sivu": 1, 
+        "teksti": null, 
+        "ankkuripiste_y": 250, 
+        "ankkuripiste_x": 400, 
+        "koko_y": 206, 
+        "koko_x": 320, 
+        "elementinTyyppi": "", 
+        "kuva": 1,
+        "z" : 1
     }
 },
 {
@@ -96,7 +112,7 @@
     "model": "albumi.tilaus", 
     "fields": {
         "albumi": 1, 
-        "kayttaja": 1, 
+        "kayttaja": 2, 
         "tilausAika": "2014-01-27T14:50:00Z", 
         "hinta": 109.45, 
         "albuminKoko_x": 209, 

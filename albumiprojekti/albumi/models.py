@@ -17,12 +17,15 @@ class Albumi(models.Model):
 
     # TODO: Albumilla voisi olla myös jokin kansikuva? Sen voisi tehdä samalla tekniikalla kuin muutkin sivut.
 
+    __unicode__ = nimi
+
 class Sivu(models.Model):
-    albumi = models.ForeignKey(Albumi)
+    albumi = models.ForeignKey(Albumi, related_name='sivut', related_query_name="sivu")
     sivunumero = models.PositiveIntegerField()
 
     # TODO: asetteluTyyppi
-
+    class Meta:
+        ordering = ['sivunumero']
         
 class Kuva(models.Model):
     '''Järjestelmään tallennettu (linkitetty) kuva'''
@@ -33,13 +36,12 @@ class Kuva(models.Model):
     
 class Teksti(models.Model):
     teksti = models.TextField()
-
     
 class SivunElementti(models.Model):
     '''Sivuilla on elementtejä, jotka voivat sisältää kuvan tai tekstiä.
     Elementillä on ulkonäköä ja sijaintia määrittäviä ominaisuuksia.'''
     
-    sivu = models.ForeignKey(Sivu)
+    sivu = models.ForeignKey(Sivu, related_name='elementit', related_query_name="elementti")
     elementinTyyppi = models.CharField(max_length=3, choices=(('img', 'Kuva'), ('txt', 'Teksti')), blank=True)
     kuva = models.ForeignKey(Kuva, null=True, blank=True)
     teksti = models.ForeignKey(Teksti, null=True, blank=True)
@@ -51,8 +53,12 @@ class SivunElementti(models.Model):
     koko_x = models.PositiveIntegerField()
     koko_y = models.PositiveIntegerField()
     
+    z = models.IntegerField()
     # TODO: kiertokulma
     # TODO: sisällön muotoilu (venytys, ankkuripiste, kiertokulma, tekstin fontti ja koko)
+    
+    class Meta:
+        ordering = ['z']
     
 class Tilaus(models.Model):
     kayttaja = models.ForeignKey(User)
