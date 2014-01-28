@@ -62,6 +62,13 @@ Albumiprojektin alla olevassa static-kansiossa on yleisesti käytetyt js-kirjast
 
 Albumi-applikaation alla olevassa static-kansiossa on applikaatiolle olennaiset tyylitiedostot ja js-tiedostot. 
 
+### Initial data
+
+Käyttäjiä testidatassa on kaksi: superuser, jonka käyttäjätunnus on '**admin**' ja salasana '**wsd2014**' ja 
+normaali käyttäjä '**Tester**' / '**tester**'.
+
+Muuta dataa initial_data fixtuurissa on yksi albumi, jolla muutama sivu. Ensimmäisellä sivulla on yksi valokuva, 
+jolla on linkki Laurin Google Drivella (sama, jossa työstimme projektisuunnitelmaa) olevaan valokuvaan.
 
 ## Mallien / tietokannan scheman päivitys
     
