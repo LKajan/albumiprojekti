@@ -4,7 +4,7 @@ import sys
 
 import pydevd
 pydevd.patch_django_autoreload(
-patch_remote_debugger=True, #Connect to the remote debugger.
+patch_remote_debugger=True,  # Connect to the remote debugger.
 patch_show_console=True
 )
 
