@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
+# @PydevCodeAnalysisIgnore
 from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
-
 class Migration(SchemaMigration):
     def forwards(self, orm):
         # Deleting field 'Tilaus.tilausPvm'
-        db.rename_column(u'albumi_tilaus', 'tilausPvm', 'tilausAika')
+        db.rename_column(u'albumi_tilaus', 'tilausPvm', 'tilausAika')  # @UndefinedVariable
 
     def backwards(self, orm):
-        db.rename_column(u'albumi_tilaus', 'tilausAika', 'tilausPvm')
+        db.rename_column(u'albumi_tilaus', 'tilausAika', 'tilausPvm')  # @UndefinedVariable
 
 
     models = {
