@@ -11,10 +11,24 @@ def index(request):
     return render_to_response("albumi/index.html")
 
 
-def albumJson(request, albumiId):
-    jsonData = []
+def albumi(request, albumiId):
     albumi = get_object_or_404(Albumi, pk=albumiId)
-    sivut = albumi.sivut.all()
+    albumit = Albumi.objects.all()
+    return render(request, 'albumi/albumi.html', {'albumi': albumi,
+                                                  'albumit': albumit})
+
+
+def albumJson(request, albumiId, sivunumero=None):
+    albumi = get_object_or_404(Albumi, pk=albumiId)
+    jsonData = {'id': albumi.id,
+                'nimi': albumi.nimi,
+                'koko_x': albumi.koko_x,
+                'koko_y': albumi.koko_y}
+    jsonData['sivut'] = []
+    if sivunumero:
+        sivut = albumi.sivut.filter(sivunumero=sivunumero)
+    else:
+        sivut = albumi.sivut.all()
     for sivu in sivut:
         s = {'id': sivu.pk,
              'sivunumero': sivu.sivunumero,
@@ -25,7 +39,7 @@ def albumJson(request, albumiId):
                  'x': elementti.ankkuripiste_x,
                  'y': elementti.ankkuripiste_y,
                  'z': elementti.z,
-                 'koko_X': elementti.koko_x,
+                 'koko_x': elementti.koko_x,
                  'koko_y': elementti.koko_y,
                  'kuva': None,
                  'teksti': None
@@ -40,7 +54,7 @@ def albumJson(request, albumiId):
 
             s['elementit'].append(e)
 
-        jsonData.append(s)
+        jsonData['sivut'].append(s)
 
     jsonData = json.dumps(jsonData)
     callback = request.GET.get('callback', None)
