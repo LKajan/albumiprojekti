@@ -32,8 +32,12 @@ class Sivu(models.Model):
 
 class Kuva(models.Model):
     '''Järjestelmään tallennettu (linkitetty) kuva'''
+
+    kayttaja = models.ForeignKey(User, null=True, blank=True)
     url = models.URLField()
     nimi = models.CharField(max_length=100)
+
+
 
     # TODO: tageja. Taggit applikaatio tekee tämän helposti. Käytetäänkö sitä?
 

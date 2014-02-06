@@ -39,10 +39,10 @@
     "pk": 1,
     "model": "albumi.albumi", 
     "fields": {
-        "nimi": "Ensimm\u00e4inen testialbumi", 
+        "nimi": "Ensimmainen testialbumi", 
         "kayttaja": 2, 
-        "koko_y": 595, 
-        "koko_x": 842
+        "koko_y": 424, 
+        "koko_x": 600
     }
 },
 {
@@ -73,8 +73,9 @@
     "pk": 1, 
     "model": "albumi.kuva", 
     "fields": {
+        "kayttaja": 2,
         "url": "https://drive.google.com/uc?export=view&id=0BwbdYcPHdb1pMXU3MDM4b2xiSTg", 
-        "nimi": ""
+        "nimi": "Toronto"
     }
 },
 {
@@ -83,10 +84,10 @@
     "fields": {
         "sivu": 1, 
         "teksti": null, 
-        "ankkuripiste_y": 50, 
-        "ankkuripiste_x": 50, 
-        "koko_y": 412, 
-        "koko_x": 640, 
+        "ankkuripiste_y": 10, 
+        "ankkuripiste_x": 10, 
+        "koko_y": 200, 
+        "koko_x": 310, 
         "elementinTyyppi": "", 
         "kuva": 1,
         "z" : 0
@@ -99,9 +100,9 @@
         "sivu": 1, 
         "teksti": null, 
         "ankkuripiste_y": 250, 
-        "ankkuripiste_x": 400, 
-        "koko_y": 206, 
-        "koko_x": 320, 
+        "ankkuripiste_x": 300, 
+        "koko_y": 128, 
+        "koko_x": 200, 
         "elementinTyyppi": "", 
         "kuva": 1,
         "z" : 1
