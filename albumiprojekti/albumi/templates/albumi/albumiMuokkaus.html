@@ -5,23 +5,22 @@
 <link rel="stylesheet" href="{% static 'css/albumiCarousel.css' %}">
 <script type="text/javascript" src="{% static 'jcarousel/jquery.jcarousel.js' %}"></script>
 
-<!-- Omat js-koodit -->
 <script type="text/javascript" src="{% static 'jcarousel.connected-carousels.js' %}"></script>
 <script type="text/javascript" src="{% static 'albumi.js' %}"></script>
-<script type="text/javascript" src="{% static 'albumiKatselu.js' %}"></script>
-
+<script type="text/javascript" src="{% static 'muokattavaAlbumi.js' %}"></script>
+<script type="text/javascript" src="{% static 'albumiMuokkaus.js' %}"></script>
 {% endblock %}
 
 {% block content %}
 <div class="row" id="container">
     <div class="col-lg-3 sidebar">
-        <h4>Albumit</h4>
+        <h4>Kuvat</h4>
         <div class="row" id="albumilista">
-            {% for albumi in albumit %}
+            {% for kuva in kuvat %}
 	        <div class="col-lg-6">
 	           <div class="thumbnail">
-					<img class="img-thumbnail" src="" width="150px" height="100px">
-					<h6 ><a href="{% url 'albumi.views.albumi' albumi.id %}">{{ albumi.nimi }}</a></h6>
+					<img class="" src="{{ kuva.url }}" width="150px" height="100px">
+					{{ kuva.nimi }}
                 </div>
             </div>
 			{% endfor %}
@@ -36,8 +35,6 @@
                     </ul>
                 </div>
                 <p class="sivunumero"><span id="sivunumeroTama">1</span>/<span id="sivunumeroYht">3</span></p>
-                <a href="#" class="prev prev-stage"><span>&lsaquo;</span></a>
-                <a href="#" class="next next-stage"><span>&rsaquo;</span></a>
             </div>
             <div class="navigation">
                 <a href="#" class="prev prev-navigation">&lsaquo;</a>
