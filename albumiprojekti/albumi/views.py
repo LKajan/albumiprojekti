@@ -18,6 +18,13 @@ def albumi(request, albumiId):
                                                   'albumit': albumit})
 
 
+def albumiMuokkaus(request, albumiId):
+    albumi = get_object_or_404(Albumi, pk=albumiId)
+    kuvat = Kuva.objects.all()
+    return render(request, 'albumi/albumiMuokkaus.html', {'albumi': albumi,
+                                                          'kuvat': kuvat})
+
+
 def albumJson(request, albumiId, sivunumero=None):
     albumi = get_object_or_404(Albumi, pk=albumiId)
     jsonData = {'id': albumi.id,
