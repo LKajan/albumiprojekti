@@ -1,13 +1,38 @@
+var valintaColor = '#CC0000';
+var valintaWidth = 2;
+var dragBoxSize = 6;
+var interval = 30;
+
 function MuokattavaElementti(elementti, parentContext, callback){
 	Elementti.apply(this, arguments);
 	
-	var elementtiObject = this;
+
 }
 MuokattavaElementti.prototype = new Elementti();
 MuokattavaElementti.prototype.constructor = MuokattavaElementti;
+MuokattavaElementti.prototype.handels = function(){
+	var half = dragBoxSize / 2;
+	var handels = [];
+	handels[0] = {x:this.x-half, 				y:this.y-half};
+	handels[1] = {x:this.x+this.width-half, 	y:this.y-half};
+	handels[2] = {x:this.x+this.width-half, 	y:this.y+this.heigth-half};
+	handels[3] = {x:this.x-half, 				y:this.y+this.heigth-half};
+	
+	return handels;
+}
 
-MuokattavaElementti.prototype.contains = function(mx, my) {
-	return  (this.x <= mx) && (this.x + this.width >= mx) && (this.y <= my) && (this.y + this.heigth >= my);
+MuokattavaElementti.prototype.contains = function(mx, my, tolerance) {
+	var tolerance = tolerance || 0;
+	return  (this.x-tolerance <= mx) && (this.x + this.width + tolerance >= mx) && (this.y - tolerance <= my) && (this.y + this.heigth + tolerance >= my);
+};
+MuokattavaElementti.prototype.containsDrag = function(mx,my, tolerance) {
+	var tolerance = tolerance || 0;
+	var handels = this.handels();
+	for (var i=0; i < handels.length; i++){
+		var h = handels[i];
+		if ((h.x - tolerance <= mx) && (h.x + dragBoxSize +tolerance >= mx) && (h.y - tolerance <= my) && (h.y + dragBoxSize + tolerance >= my)) return i;
+	}
+	return false;
 };
 MuokattavaElementti.prototype.draw = function(ctx){
 	ctx.drawImage(
@@ -18,6 +43,19 @@ MuokattavaElementti.prototype.draw = function(ctx){
 			this.heigth);
 };
 
+MuokattavaElementti.prototype.drawValinta  = function(ctx) {
+    ctx.strokeStyle = valintaColor;
+    ctx.lineWidth = valintaWidth;
+    ctx.strokeRect(this.x, this.y, this.width, this.heigth);
+}
+MuokattavaElementti.prototype.drawHandels  = function(ctx) {
+	ctx.fillStyle = valintaColor;
+	var handels = this.handels();
+	for (var i=0; i < handels.length; i++){
+		var h = handels[i];
+		ctx.fillRect(h.x, h.y, dragBoxSize, dragBoxSize);
+	}
+}
 
 
 function MuokattavaSivu(sivu, callback){
@@ -27,6 +65,7 @@ function MuokattavaSivu(sivu, callback){
 	
 	this.valid = false;
 	this.dragging = false;
+	this.resizing = false;
 	this.valinta = null;
 	this.dragoffx = 0;
 	this.dragoffy = 0;
@@ -50,6 +89,19 @@ function MuokattavaSivu(sivu, callback){
 		var mouse = sivuObject.getMouse(e);
 		var mx = mouse.x;
 		var my = mouse.y;
+		if (sivuObject.valinta) {
+			var mySel = sivuObject.valinta;
+			var resizeSuunta = mySel.containsDrag(mx, my);
+		    if (resizeSuunta !== false){
+		    	sivuObject.resizing = true;
+		    	sivuObject.resizeSuunta = resizeSuunta;
+		    	
+			    sivuObject.valid = false;
+			    return;
+		    }
+		}
+
+
 		var elementit = sivuObject.elementit;
 		var l = elementit.length;
 		for (var i = l-1; i >= 0; i--) {
@@ -60,6 +112,7 @@ function MuokattavaSivu(sivu, callback){
 			    sivuObject.dragoffx = mx - mySel.x;
 			    sivuObject.dragoffy = my - mySel.y;
 			    sivuObject.dragging = true;
+
 			    sivuObject.valinta = mySel;
 			    sivuObject.valid = false;
 			    return;
@@ -73,7 +126,70 @@ function MuokattavaSivu(sivu, callback){
 		}
 	}, true);
 	this.canvas.addEventListener('mousemove', function(e) {
-		if (sivuObject.dragging){
+		this.style.cursor='auto';
+		if (sivuObject.valinta) {
+			var mouse = sivuObject.getMouse(e);
+			var mx = mouse.x;
+			var my = mouse.y;
+			var mySel = sivuObject.valinta;
+			if (mySel.contains(mx, my, dragBoxSize/2)) {
+				if (mySel.contains(mx, my)) {
+					this.style.cursor='move';
+				}
+				var h = mySel.containsDrag(mx, my);
+		        if (h !== false){
+					switch (h) {
+			          case 0:
+			            this.style.cursor='nw-resize';
+			            break;
+			          case 1:
+			            this.style.cursor='ne-resize';
+			            break;
+			          case 2:
+			            this.style.cursor='se-resize';
+			            break;
+			          case 3:
+			            this.style.cursor='sw-resize';
+			            break;
+			        }
+				}
+			}
+		}
+		if (sivuObject.resizing){
+			var mouse = sivuObject.getMouse(e);
+			var suunta = sivuObject.resizeSuunta;
+			var mySel = sivuObject.valinta;
+			
+		    var oldx = mySel.x;
+		    var oldy = mySel.y;
+		    var oldh = mySel.heigth;
+		    var oldw = mySel.width;
+		    
+		    switch (suunta) {
+		      case 0:
+		        mySel.x = mx;
+		        mySel.width += oldx - mx;
+		        mySel.heigth = mySel.aspect * mySel.width;
+		        mySel.y -= mySel.heigth - oldh;
+		        
+		        break;
+		      case 1:
+		        mySel.width = mx - oldx;
+		        mySel.heigth = mySel.aspect * mySel.width;
+		        mySel.y -= mySel.heigth - oldh;
+		        break;
+		      case 2:
+		        mySel.width = mx - oldx;
+		        mySel.heigth = mySel.aspect * mySel.width;
+		        break;
+		      case 3:
+		        mySel.x = mx;
+		        mySel.width += oldx - mx;
+		        mySel.heigth = mySel.aspect * mySel.width;
+		        break;
+		    }
+		    sivuObject.valid = false;
+		} else if (sivuObject.dragging){
 			var mouse = sivuObject.getMouse(e);
 			// We don't want to drag the object by its top-left corner, we want to drag it
 			// from where we clicked. Thats why we saved the offset and use it here
@@ -84,16 +200,11 @@ function MuokattavaSivu(sivu, callback){
 	}, true);
 	this.canvas.addEventListener('mouseup', function(e) {
 		sivuObject.dragging = false;
+		sivuObject.resizing = false;
 	}, true);
 	
 	
-	
-	// **** Options! ****
-	  
-	this.valintaColor = '#CC0000';
-	this.valintaWidth = 2;  
-	this.interval = 30;
-	setInterval(function() { sivuObject.draw(); }, sivuObject.interval);
+	setInterval(function() { sivuObject.draw(); }, interval);
 }
 MuokattavaSivu.prototype = new Sivu();
 MuokattavaSivu.prototype.constructor = MuokattavaSivu;
@@ -123,10 +234,9 @@ MuokattavaSivu.prototype.draw = function() {
       ctx.strokeStyle = this.valintaColor;
       ctx.lineWidth = this.valintaWidth;
       var mySel = this.valinta;
-      ctx.strokeRect(mySel.x,mySel.y,mySel.width,mySel.heigth);
+      this.valinta.drawValinta(ctx);
+	  this.valinta.drawHandels(ctx);
     }
- 
-    // ** Add stuff you want drawn on top all the time here **
  
     this.valid = true;
   }

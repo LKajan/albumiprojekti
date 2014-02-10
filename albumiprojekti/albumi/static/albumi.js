@@ -10,6 +10,7 @@ function Elementti(elementti, parentContext, callback) {
 	this.y = elementti.y;
 	this.width = elementti.koko_x;
 	this.heigth = elementti.koko_y;
+	this.aspect = this.heigth / this.width;
 	this.image = new Image();
 
 	this.image.onload = function() {
