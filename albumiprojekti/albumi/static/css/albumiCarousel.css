@@ -5,7 +5,7 @@
 }
 
 .connected-carousels .stage {
-    height: 431px;
+    height: 432px;
     margin: 0;
     position: relative;
 }
@@ -48,8 +48,7 @@
 }
 
 .connected-carousels .stage li {
-    border: 1px solid #e1e1e8;
-    border-radius: 4px;
+
 }
 
 /** Stage carousel specific styles **/

@@ -9,8 +9,8 @@ function Elementti(elementti, parentContext, callback) {
 	this.x = elementti.x;
 	this.y = elementti.y;
 	this.width = elementti.koko_x;
-	this.heigth = elementti.koko_y;
-	this.aspect = this.heigth / this.width;
+	this.height = elementti.koko_y;
+	this.aspect = this.height / this.width;
 	this.image = new Image();
 
 	this.image.onload = function() {
@@ -18,7 +18,7 @@ function Elementti(elementti, parentContext, callback) {
 				elementtiObject.x,
 				elementtiObject.y,
 				elementtiObject.width,
-				elementtiObject.heigth);
+				elementtiObject.height);
 		console.log("Elementti "+elementtiObject.id+" valmis.");
 		if(typeof callback !== 'undefined'){
 			callback();

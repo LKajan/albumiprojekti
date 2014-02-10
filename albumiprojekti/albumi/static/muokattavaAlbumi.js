@@ -15,15 +15,19 @@ MuokattavaElementti.prototype.handels = function(){
 	var handels = [];
 	handels[0] = {x:this.x-half, 				y:this.y-half};
 	handels[1] = {x:this.x+this.width-half, 	y:this.y-half};
-	handels[2] = {x:this.x+this.width-half, 	y:this.y+this.heigth-half};
-	handels[3] = {x:this.x-half, 				y:this.y+this.heigth-half};
+	handels[2] = {x:this.x+this.width-half, 	y:this.y+this.height-half};
+	handels[3] = {x:this.x-half, 				y:this.y+this.height-half};
 	
 	return handels;
 }
 
 MuokattavaElementti.prototype.contains = function(mx, my, tolerance) {
 	var tolerance = tolerance || 0;
-	return  (this.x-tolerance <= mx) && (this.x + this.width + tolerance >= mx) && (this.y - tolerance <= my) && (this.y + this.heigth + tolerance >= my);
+	var minx = this.x-tolerance;
+	var maxx = this.x + this.width + tolerance;
+	var miny = this.y - tolerance;
+	var maxy = this.y + this.height + tolerance;
+	return  (minx <= mx) && (mx <= maxx) && (miny <= my) && (my <= maxy);
 };
 MuokattavaElementti.prototype.containsDrag = function(mx,my, tolerance) {
 	var tolerance = tolerance || 0;
@@ -40,13 +44,13 @@ MuokattavaElementti.prototype.draw = function(ctx){
 			this.x,
 			this.y,
 			this.width,
-			this.heigth);
+			this.height);
 };
 
 MuokattavaElementti.prototype.drawValinta  = function(ctx) {
     ctx.strokeStyle = valintaColor;
     ctx.lineWidth = valintaWidth;
-    ctx.strokeRect(this.x, this.y, this.width, this.heigth);
+    ctx.strokeRect(this.x, this.y, this.width, this.height);
 }
 MuokattavaElementti.prototype.drawHandels  = function(ctx) {
 	ctx.fillStyle = valintaColor;
@@ -162,30 +166,30 @@ function MuokattavaSivu(sivu, callback){
 			
 		    var oldx = mySel.x;
 		    var oldy = mySel.y;
-		    var oldh = mySel.heigth;
+		    var oldh = mySel.height;
 		    var oldw = mySel.width;
 		    
 		    switch (suunta) {
 		      case 0:
 		        mySel.x = mx;
 		        mySel.width += oldx - mx;
-		        mySel.heigth = mySel.aspect * mySel.width;
-		        mySel.y -= mySel.heigth - oldh;
+		        mySel.height = mySel.aspect * mySel.width;
+		        mySel.y -= mySel.height - oldh;
 		        
 		        break;
 		      case 1:
 		        mySel.width = mx - oldx;
-		        mySel.heigth = mySel.aspect * mySel.width;
-		        mySel.y -= mySel.heigth - oldh;
+		        mySel.height = mySel.aspect * mySel.width;
+		        mySel.y -= mySel.height - oldh;
 		        break;
 		      case 2:
 		        mySel.width = mx - oldx;
-		        mySel.heigth = mySel.aspect * mySel.width;
+		        mySel.height = mySel.aspect * mySel.width;
 		        break;
 		      case 3:
 		        mySel.x = mx;
 		        mySel.width += oldx - mx;
-		        mySel.heigth = mySel.aspect * mySel.width;
+		        mySel.height = mySel.aspect * mySel.width;
 		        break;
 		    }
 		    sivuObject.valid = false;
