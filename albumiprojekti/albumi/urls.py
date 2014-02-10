@@ -15,4 +15,7 @@ urlpatterns = patterns('',
     url(r'albumi/(\d+)/(\d+).json', albumJson),
     url(r'albumi/(\d+)/?$', albumi),
     url(r'albumi/(\d+)/muokkaa', albumiMuokkaus),
+    url(r'^rekisterointi/?$', rekisteroityminen, name='rekisterointi'),
+    url(r'^login/?$', 'django.contrib.auth.views.login'),
+    url(r'^logout/?$', 'django.contrib.auth.views.logout', {'next_page': '/albumi'})
 )
