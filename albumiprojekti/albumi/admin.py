@@ -3,6 +3,10 @@ from albumi.models import *
 # Register your models here.
 
 
+class KayttajaAdmin(admin.ModelAdmin):
+    pass
+
+
 class SivutInline(admin.TabularInline):
     model = Sivu
     fk_name = "albumi"
@@ -33,9 +37,13 @@ class TekstiAdmin(admin.ModelAdmin):
 class TilausAdmin(admin.ModelAdmin):
     pass
 
+admin.site.register(Kayttaja, KayttajaAdmin)
+
 admin.site.register(Albumi, AlbumiAdmin)
 admin.site.register(Sivu, SivuAdmin)
 admin.site.register(SivunElementti, SivuElementtiAdmin)
 admin.site.register(Kuva, KuvaAdmin)
 admin.site.register(Teksti, TekstiAdmin)
 admin.site.register(Tilaus, TilausAdmin)
+
+

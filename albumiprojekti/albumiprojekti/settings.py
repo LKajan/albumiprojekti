@@ -77,6 +77,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOGIN_URL = '/albumi/login'
+LOGIN_REDIRECT_URL = '/albumi'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/

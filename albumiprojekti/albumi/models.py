@@ -6,6 +6,20 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 
+class Kayttaja(models.Model):
+    kayttaja = models.OneToOneField(User)
+
+    osoite_katu = models.CharField(max_length=60)
+    osoite_postinumero = models.CharField(max_length=5)
+    osoite_postitoimipaikka = models.CharField(max_length=20)
+
+    puhelinnumero = models.CharField(max_length=15)
+
+    # Override the __unicode__() method to return out something meaningful!
+    def __unicode__(self):
+        return self.kayttaja.username
+
+
 class Albumi(models.Model):
     nimi = models.CharField(max_length="100")
     kayttaja = models.ForeignKey(User)
