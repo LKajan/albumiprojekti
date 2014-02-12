@@ -12,40 +12,48 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-3 sidebar">
-        <h4>Kuvat</h4>
-        <div class="row" id="albumilista">
-            {% for kuva in kuvat %}
-	        <div class="col-lg-6">
-	           <div class="thumbnail">
-					<img class="raahattavaKuva" src="{{ kuva.url }}" width="150px" height="100px" draggable="true">
-					{{ kuva.nimi }}
-                </div>
-            </div>
-			{% endfor %}
-        </div>
-    </div>
-    <div class="col-lg-9 main">
-		<h1>{{ albumi.nimi }}</h1>
-        <div class="connected-carousels">
-            <div class="stage">
-                <div class="carousel carousel-stage">
-                    <ul>
-                    </ul>
-                </div>
-                <p class="sivunumero"><span id="sivunumeroTama">1</span>/<span id="sivunumeroYht">3</span></p>
-            </div>
-            <div class="navigation">
-                <a href="#" class="prev prev-navigation">&lsaquo;</a>
-                <a href="#" class="next next-navigation">&rsaquo;</a>
-                <div class="carousel carousel-navigation">
-					<ul>
-					</ul>
-                </div>
-            </div>
-        </div>
+<div class="container">
+	<div class="row">
+	    <div class="col-lg-3 sidebar">
+	        <h4>Omat kuvat</h4>
+	        <p>Raahaa tästä kuvia albumiin</p>
+	        <div id="albumilista">
+	            {% for kuva in kuvat %}
+		        <div class="col-lg-6 thumbnail">
+					<img class="raahattavaKuva img-responsive" src="{{ kuva.url }}" draggable="true">
+					<h5><input class="muokattavaTeksti" type="text" value="{{ kuva.nimi }}"></h5>
+	            </div>
+				{% endfor %}
+	        </div>
+		    {% if user.is_authenticated %}
+				<input id="kuvaUrlInput" class="form-control" placeholder="Kuvan url">
+				<button id="lisaaKuvaButton" type="button" class="btn btn-success">Lisää <span class="glyphicon glyphicon-plus"></span></button>
+		    {% endif %}
+	    </div>
+	    <div class="col-lg-9 main">
+			<h1><input id="albumiNimi" class="muokattavaTeksti" type="text" placeholder="Anna albumille nimi" value="{{ albumi.nimi }}"></h1>
+	        <div class="connected-carousels">
+	            <div class="stage">
+	                <div class="carousel carousel-stage">
+	                    <ul>
+	                    </ul>
+	                </div>
+	                <p class="sivunumero"><span id="sivunumeroTama">1</span>/<span id="sivunumeroYht">3</span></p>
+	            </div>
+	            <div class="navigation">
+	                <a href="#" class="prev prev-navigation">&lsaquo;</a>
+	                <a href="#" class="next next-navigation">&rsaquo;</a>
+	                <div class="carousel carousel-navigation">
+						<ul>
+						</ul>
+	                </div>
+	            </div>
+	            <div>
+	               <button id="lisaaSivuButton" type="button" class="btn btn-success">Lisää sivu<span class="glyphicon glyphicon-plus"></span></button>
+	               <button id="tallenna" type="button" class="btn btn-primary pull-right">Tallenna</button>
+	            </div>
+	        </div>
+		</div>
 	</div>
 </div>
-
 {% endblock %}

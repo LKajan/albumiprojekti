@@ -21,3 +21,9 @@ canvas {
 canvas.over {
     border-style: dashed;
 }
+
+.muokattavaTeksti {
+	border:0;
+	width: 100%;
+}
+

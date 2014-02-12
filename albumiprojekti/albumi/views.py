@@ -1,6 +1,5 @@
-from django.shortcuts import render, render_to_response, get_object_or_404, RequestContext
+from django.shortcuts import render, get_object_or_404
 from django.http import Http404, HttpResponse, HttpRequest, HttpResponseBadRequest, HttpResponseRedirect
-from django.contrib.auth import authenticate
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
@@ -13,22 +12,37 @@ import json
 
 
 def index(request):
-    return render_to_response("albumi/index.html")
+    return render(request, "albumi/index.html")
+
+
+def albumit(request):
+    user = request.user
+    if user.is_authenticated():
+        albumit = Albumi.objects.filter(kayttaja=user)
+    else:
+        albumit = Albumi.objects.filter(julkinen=True)
+
+    return render(request, 'albumi/albumit.html', {'albumit': albumit})
 
 
 def albumi(request, albumiId):
-    albumi = get_object_or_404(Albumi, pk=albumiId)
+    user = request.user
+    albumi = get_object_or_404(Albumi, julkinenUrlID=albumiId)
+    if albumi.julkinen or (user.is_authenticated() and albumi.kayttaja == user):
+        return render(request, 'albumi/albumi.html', {'albumi': albumi})
+    else:
+        return render(request, 'registration/login.html')
 
-    albumit = Albumi.objects.all()
-    return render(request, 'albumi/albumi.html', {'albumi': albumi,
-                                                  'albumit': albumit})
 
 @login_required
 def albumiMuokkaus(request, albumiId):
     user = request.user
+    if albumiId == 'uusi':
+        albumi = None
+    else:
+        albumi = get_object_or_404(Albumi, julkinenUrlID=albumiId)
 
-    albumi = get_object_or_404(Albumi, pk=albumiId)
-    if albumi.kayttaja == user:
+    if albumi is None or albumi.kayttaja == user:
         kuvat = Kuva.objects.filter(kayttaja=user)
         return render(request, 'albumi/albumiMuokkaus.html', {'albumi': albumi,
                                                               'kuvat': kuvat})
@@ -64,7 +78,8 @@ def albumJson(request, albumiId, sivunumero=None):
                  }
             if elementti.kuva:
                 e['kuva'] = {'id': elementti.kuva.pk,
-                             'url': elementti.kuva.url}
+                             'url': elementti.kuva.url,
+                             'nimi': elementti.kuva.nimi}
 
             if elementti.teksti:
                 e['teksti'] = {'id': elementti.teksti.pk,
@@ -81,10 +96,25 @@ def albumJson(request, albumiId, sivunumero=None):
     return HttpResponse(jsonData, content_type="application/json")
 
 
-def rekisteroityminen(request):
-    # Like before, get the request's context.
-    context = RequestContext(request)
+def tallennus(request):
+    if not request.is_ajax():
+        return HttpResponse("Ei ajax")
 
+    json = request.raw_post_data
+    albumiData = json.loads(json)
+    if 'id' in albumiData:
+        albumi = Albumi.objects.get(pk=albumiData['id'])
+    else:
+        albumi = Albumi()
+
+    albumi.nimi = albumiData['nimi']
+    albumi.save()
+
+    return HttpResponse(status=201)
+
+
+
+def rekisteroityminen(request):
     # A boolean value for telling the template whether the registration was successful.
     # Set to False initially. Code changes value to True when registration succeeds.
     registered = False
@@ -131,16 +161,12 @@ def rekisteroityminen(request):
         profile_form = KayttajaForm()
 
     # Render the template depending on the context.
-    return render_to_response(
-            'registration/rekisterointi.html',
-            {'user_form': user_form, 'profile_form': profile_form, 'registered': registered},
-            context)
+    return render(request, 'registration/rekisterointi.html', {'user_form': user_form,
+                                                               'profile_form': profile_form,
+                                                               'registered': registered})
 
 
 def user_login(request):
-    # Like before, obtain the context for the user's request.
-    context = RequestContext(request)
-
     # If the request is a HTTP POST, try to pull out the relevant information.
     if request.method == 'POST':
         # Gather the username and password provided by the user.
@@ -175,4 +201,4 @@ def user_login(request):
     else:
         # No context variables to pass to the template system, hence the
         # blank dictionary object...
-        return render_to_response('registration/login.html', {}, context)
+        return render(request, 'registration/login.html')

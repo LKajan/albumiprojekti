@@ -48,6 +48,7 @@ function handleDrop(e) {
 
 	var el = document.getElementById(e.dataTransfer.getData('Text'));
 	var url = dragSrcEl.getAttribute("src");
+	var kuvanNimi = $(dragSrcEl).siblings('input').val();
 	var sivunumero = parseInt(this.id.slice(10));
 	var sivu = albumi.sivut[sivunumero];
 	
@@ -63,7 +64,8 @@ function handleDrop(e) {
 	var elementti = {
 			"id": null,
 			"kuva": {
-				"url": url
+				"url": url,
+				"nimi": kuvanNimi
 			},
 			"y": mouse.y-korkeus/2,
 			"x": mouse.x-leveys/2,
@@ -72,9 +74,29 @@ function handleDrop(e) {
 			"koko_x": leveys
 	};
 	
-	sivu.lisaaElementti(elementti);
+	sivu.lisaaElementti(elementti, sivu.elementtiValmis);
 }
 
+function lataaKuva(e){
+	var kuvaInput = $('#kuvaUrlInput');
+	var url = kuvaInput.val();
+	var div = $('<div>', {'class': "col-lg-6 thumbnail"});
+
+	var kuva = $('<img>', {
+				'class': "raahattavaKuva img-responsive",
+				'src': url,
+				'draggable': "true"})
+	
+	kuva[0].addEventListener('dragstart', handleDragStart, false);
+	kuva[0].addEventListener('dragend', handleDragEnd, false);
+				
+	kuva.appendTo(div);
+	$('<input>', {'class': "muokattavaTeksti", 'placeholder': "kuvan nimi", 'value':""}).appendTo(div);
+
+	div.appendTo($('#albumilista'));
+	
+	kuvaInput.val('');
+}
 
 $( document ).ready(function() {
 	initJCarousel();
@@ -85,4 +107,6 @@ $( document ).ready(function() {
 		kuva.addEventListener('dragstart', handleDragStart, false);
 		kuva.addEventListener('dragend', handleDragEnd, false);
 	});
+	
+	$('#lisaaKuvaButton').click(lataaKuva);
 });

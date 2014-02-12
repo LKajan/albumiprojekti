@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-
+import random
 # Create your models here.
 
 
@@ -19,6 +19,14 @@ class Kayttaja(models.Model):
     def __unicode__(self):
         return self.kayttaja.username
 
+@property
+def random_id(self):
+    while 1:
+        code = str(random.random())[2:]
+        try:
+            Albumi.objects.get(julkinenUrlID=code)
+        except:
+            return code
 
 class Albumi(models.Model):
     nimi = models.CharField(max_length="100")
@@ -27,12 +35,25 @@ class Albumi(models.Model):
     koko_x = models.PositiveIntegerField()  # Albumin sivun leveys px
     koko_y = models.PositiveIntegerField()  # Albumin sivun korkeus px
 
+    julkinen = models.BooleanField(default=False)
+    julkinenUrlID = models.CharField(max_length=15, editable=False, unique=True)
+
     # TODO: julkinenUrlID (joku 10 merkkiä pitkä random id? Vai voidaanko käyttää pelkästään primary-key:tä)
     # TODO: Albumin salasana
 
     # TODO: Albumilla voisi olla myös jokin kansikuva? Sen voisi tehdä samalla tekniikalla kuin muutkin sivut.
 
     __unicode__ = nimi
+
+    def save(self, *args, **kwargs):
+        while 1:
+            code = str(random.random())[2:]
+            try:
+                Albumi.objects.get(julkinenUrlID=code)
+            except:
+                self.julkinenUrlID = code
+                break
+        super(Albumi, self).save(*args, **kwargs)
 
 
 class Sivu(models.Model):

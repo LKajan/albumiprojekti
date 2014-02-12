@@ -3,10 +3,8 @@ var valintaWidth = 2;
 var dragBoxSize = 6;
 var interval = 30;
 
-function MuokattavaElementti(elementti, parentContext, callback){
+function MuokattavaElementti(elementti, callback){
 	Elementti.apply(this, arguments);
-	
-
 }
 MuokattavaElementti.prototype = new Elementti();
 MuokattavaElementti.prototype.constructor = MuokattavaElementti;
@@ -245,8 +243,9 @@ MuokattavaSivu.prototype.draw = function() {
     this.valid = true;
   }
 };
-Sivu.prototype.lisaaElementti = function(elementti, callback) {
-	this.elementit.push(new MuokattavaElementti(elementti, this.context, callback));
+MuokattavaSivu.prototype.lisaaElementti = function(elementti, callback) {
+	this.elementit.push(new MuokattavaElementti(elementti, callback));
+	this.valid = false;
 };
 MuokattavaSivu.prototype.tyhjenna = function(){
 	this.context.clearRect(0, 0, this.width, this.height);

@@ -1,31 +1,41 @@
-function Elementti(elementti, parentContext, callback) {
+function Elementti(elementti, callback) {
 	if (arguments.length == 0) return;
 	
-	var parentContext = parentContext;
 	var elementtiObject = this;
 	
 	this.id = elementti.id;
 	this.teksti = elementti.teksti;
 	this.x = elementti.x;
 	this.y = elementti.y;
+	this.z = elementti.z;
 	this.width = elementti.koko_x;
 	this.height = elementti.koko_y;
 	this.aspect = this.height / this.width;
+	this.kuvanid = elementti.kuva.id;
+	this.kuvanNimi = elementti.kuva.nimi;
 	this.image = new Image();
 
 	this.image.onload = function() {
-		parentContext.drawImage(elementtiObject.image,
-				elementtiObject.x,
-				elementtiObject.y,
-				elementtiObject.width,
-				elementtiObject.height);
-		console.log("Elementti "+elementtiObject.id+" valmis.");
+		console.log("Elementti "+elementtiObject.id+" latautunut.");
 		if(typeof callback !== 'undefined'){
 			callback();
 		}
 	};
 	this.image.src = elementti.kuva.url;
 };
+Elementti.prototype.toJSON = function(){
+	var json = {
+		id: this.id,
+		teksti: this.teksti,
+		x: this.x,
+		y: this.y,
+		z: this.z,
+		kuva : {url: this.image.src, id: this.kuvanid, nimi: this.kuvanNimi},
+		koko_x: this.width,
+		koko_y: this.height
+	}
+	return json;
+}
 
 function Sivu(sivu, callback){
 	if (arguments.length == 0) return;
@@ -33,9 +43,17 @@ function Sivu(sivu, callback){
 	var sivuObject = this;
 	var elementtejaValmiina = 0;
 	var elementteja = sivu.elementit.length;
-	var elementtiValmis = function(){
+	this.elementtiValmis = function(){
 		elementtejaValmiina++;
 		if (elementtejaValmiina >= elementteja) {
+			for (var i =0; i < sivuObject.elementit.length; i++){
+				var elementti = sivuObject.elementit[i];
+				sivuObject.context.drawImage(elementti.image,
+						elementti.x,
+						elementti.y,
+						elementti.width,
+						elementti.height);
+			}
 			console.log("Sivu "+sivuObject.id+" valmis!");
 			if(typeof callback !== 'undefined'){
 				callback();
@@ -55,15 +73,26 @@ function Sivu(sivu, callback){
 	this.context = this.canvas.getContext('2d');
 
 	$.each( sivu.elementit, function(i, elementti) {
-		sivuObject.lisaaElementti(elementti, elementtiValmis);
+		sivuObject.lisaaElementti(elementti, sivuObject.elementtiValmis);
 	});
 	
 	if (elementteja == 0) {
-		elementtiValmis();
+		this.elementtiValmis();
 	}
 };
+Sivu.prototype.toJSON = function(){
+	var json = {
+		id: this.id,
+		sivunumero: this.sivunumero,
+		elementit : this.elementit,
+	};
+	return json;
+}
+
 Sivu.prototype.lisaaElementti = function(elementti, callback) {
-	this.elementit.push(new Elementti(elementti, this.context, callback));
+	if (typeof(elementti.z) == 'undefined') elementti.z = this.elementit.length;
+	
+	this.elementit.push(new Elementti(elementti, callback));
 };
 Sivu.prototype.thumb = function() {
 	// TODO CORS error tietenkin
@@ -85,33 +114,44 @@ function Albumi(json, callback) {
 	this.sivut = [];
 	this.id = json.id;
 	this.nimi = json.nimi;
-	
+	this.koko_x = json.koko_x;
+	this.koko_y = json.koko_y;
 	
 	var sivujavalmiina = 0;
 	var sivuja = json.sivut.length;
-	var sivuValmis = function(){
+	this.sivuValmis = function(){
 		sivujavalmiina++;
 		if (sivujavalmiina >= sivuja) {
 			console.log("Koko albumi valmis!");
+			console.log(JSON.stringify(albumiObject));
 			if(typeof callback !== 'undefined'){
 				callback();
 			}
 		}
 	}
 	$.each( json.sivut, function(i, sivu) {
-		sivu.width = json.koko_x;
-		sivu.height = json.koko_y;
-		albumiObject.lisaaSivu(sivu.sivunumero, sivu, sivuValmis);
+		sivu.width = albumiObject.koko_x;
+		sivu.height = albumiObject.koko_y;
+		albumiObject.lisaaSivu(sivu.sivunumero, sivu, albumiObject.sivuValmis);
 	});
 	
 	if (sivuja == 0){ 
-		sivuValmis();
+		this.sivuValmis();
 	}
 };
 Albumi.prototype.lisaaSivu = function(sivunumero, sivu, callback){
 	this.sivut[sivunumero] = new Sivu(sivu, callback);
 }
-
+Albumi.prototype.toJSON = function(){
+	var json = {
+		id: this.id,
+		nimi: this.nimi,
+		koko_x: this.koko_x,
+		koko_y: this.koko_y,
+		sivut : this.sivut
+	}
+	return json;
+}
 
 function lisaaAlbumi(){
 	var sivuja = albumi.sivut.length;
