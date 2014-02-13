@@ -12,7 +12,6 @@ urlpatterns = patterns('',
 
     url(r'^$', index),
     url(r'albumi/(\d+).json', albumJson),
-    url(r'albumi/(\d+)/(\d+).json', albumJson),
     url(r'albumi/(\d+)/?$', albumi),
     url(r'albumi/(\d+)/muokkaa', albumiMuokkaus),
     url(r'albumi/(uusi)/muokkaa', albumiMuokkaus),

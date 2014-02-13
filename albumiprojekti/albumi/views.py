@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 from django.shortcuts import render, get_object_or_404
 from django.http import Http404, HttpResponse, HttpRequest, HttpResponseBadRequest, HttpResponseRedirect
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
@@ -50,67 +53,88 @@ def albumiMuokkaus(request, albumiId):
         return HttpResponse("Ei oikeuksia kyseiseen albumiin.")
 
 
-def albumJson(request, albumiId, sivunumero=None):
-    albumi = get_object_or_404(Albumi, pk=albumiId)
-    jsonData = {'id': albumi.id,
-                'nimi': albumi.nimi,
-                'koko_x': albumi.koko_x,
-                'koko_y': albumi.koko_y}
-    jsonData['sivut'] = []
-    if sivunumero:
-        sivut = albumi.sivut.filter(sivunumero=sivunumero)
+def albumJson(request, albumiId):
+    if albumiId == 'uusi':
+        jsonData = json.dumps({})
     else:
-        sivut = albumi.sivut.all()
-    for sivu in sivut:
-        s = {'id': sivu.pk,
-             'sivunumero': sivu.sivunumero,
-             'elementit': []}
-        elementit = sivu.elementit.all()
-        for elementti in elementit:
-            e = {'id': elementti.pk,
-                 'x': elementti.ankkuripiste_x,
-                 'y': elementti.ankkuripiste_y,
-                 'z': elementti.z,
-                 'koko_x': elementti.koko_x,
-                 'koko_y': elementti.koko_y,
-                 'kuva': None,
-                 'teksti': None
-                 }
-            if elementti.kuva:
-                e['kuva'] = {'id': elementti.kuva.pk,
-                             'url': elementti.kuva.url,
-                             'nimi': elementti.kuva.nimi}
+        albumi = get_object_or_404(Albumi, pk=albumiId)
+        jsonData = albumi.toJson()
 
-            if elementti.teksti:
-                e['teksti'] = {'id': elementti.teksti.pk,
-                               'teksti': elementti.teksti.teksti}
-
-            s['elementit'].append(e)
-
-        jsonData['sivut'].append(s)
-
-    jsonData = json.dumps(jsonData)
     callback = request.GET.get('callback', None)
     if callback:
         jsonData = u'{0}({1})'.format(callback, jsonData)
     return HttpResponse(jsonData, content_type="application/json")
 
 
+@login_required
+@require_http_methods(["POST"])
 def tallennus(request):
     if not request.is_ajax():
         return HttpResponse("Ei ajax")
 
-    json = request.raw_post_data
-    albumiData = json.loads(json)
+    user = request.user
+
+    jsonIn = request.body
+    albumiData = json.loads(jsonIn)
     if 'id' in albumiData:
         albumi = Albumi.objects.get(pk=albumiData['id'])
     else:
         albumi = Albumi()
-
-    albumi.nimi = albumiData['nimi']
+    if 'nimi' in albumiData:
+        nimi = albumiData['nimi']
+    else:
+        nimi = u'Nimetön'
+    albumi.nimi = nimi
+    albumi.kayttaja = user
+    albumi.koko_x = albumiData['koko_x']
+    albumi.koko_y = albumiData['koko_y']
     albumi.save()
 
-    return HttpResponse(status=201)
+    for sivuData in albumiData['sivut']:
+        if 'id' in sivuData:
+            sivu = Sivu.objects.get(pk=sivuData['id'])
+        else:
+            sivu = Sivu()
+
+        sivu.sivunumero = sivuData['sivunumero']
+        sivu.albumi = albumi
+        sivu.save()
+
+        for elementtiData in sivuData['elementit']:
+            if 'id' in elementtiData and  elementtiData['id'] is not None:
+                elementti = SivunElementti.objects.get(pk=elementtiData['id'])
+            else:
+                elementti = SivunElementti()
+            elementti.ankkuripiste_x = elementtiData['x']
+            elementti.ankkuripiste_y = elementtiData['y']
+            elementti.z = elementtiData['z']
+            elementti.koko_x = float(elementtiData['koko_x'])
+            elementti.koko_y = float(elementtiData['koko_y'])
+
+            if 'kuva' in elementtiData:
+                kuvaData = elementtiData['kuva']
+                if 'id' in kuvaData:
+                    kuva = Kuva.objects.get(pk=kuvaData['id'])
+                else:
+                    kuva = Kuva()
+                kuva.url = kuvaData['url']
+                if 'nimi' in kuvaData:
+                    kuva.nimi = kuvaData['nimi']
+                kuva.kayttaja = user
+                kuva.save()
+
+            elementti.kuva = kuva
+            elementti.sivu = sivu
+
+            elementti.save()
+
+    jsonData = albumi.toJson()
+
+    callback = request.GET.get('callback', None)
+    if callback:
+        jsonData = u'{0}({1})'.format(callback, jsonData)
+
+    return HttpResponse(jsonData, content_type="application/json")
 
 
 

@@ -40,4 +40,11 @@
         {% endif %}
 	</div>
 </div>
+
+<script>
+{% if albumi %}
+    $.getJSON("{% url 'albumi.views.albumJson' albumi.id %}", luoAlbumi);
+{% endif %}
+</script>
+
 {% endblock %}

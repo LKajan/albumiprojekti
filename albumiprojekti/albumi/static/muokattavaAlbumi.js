@@ -36,14 +36,6 @@ MuokattavaElementti.prototype.containsDrag = function(mx,my, tolerance) {
 	}
 	return false;
 };
-MuokattavaElementti.prototype.draw = function(ctx){
-	ctx.drawImage(
-			this.image,
-			this.x,
-			this.y,
-			this.width,
-			this.height);
-};
 
 MuokattavaElementti.prototype.drawValinta  = function(ctx) {
     ctx.strokeStyle = valintaColor;
@@ -245,7 +237,6 @@ MuokattavaSivu.prototype.draw = function() {
 };
 MuokattavaSivu.prototype.lisaaElementti = function(elementti, callback) {
 	this.elementit.push(new MuokattavaElementti(elementti, callback));
-	this.valid = false;
 };
 MuokattavaSivu.prototype.tyhjenna = function(){
 	this.context.clearRect(0, 0, this.width, this.height);

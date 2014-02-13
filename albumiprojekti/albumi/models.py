@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-import random
+import random, json
 # Create your models here.
 
 
@@ -19,14 +19,16 @@ class Kayttaja(models.Model):
     def __unicode__(self):
         return self.kayttaja.username
 
-@property
-def random_id(self):
+
+def random_id(cls, field):
     while 1:
         code = str(random.random())[2:]
         try:
-            Albumi.objects.get(julkinenUrlID=code)
+            cls.objects.get(**dict((field, code)))
         except:
             return code
+
+
 
 class Albumi(models.Model):
     nimi = models.CharField(max_length="100")
@@ -45,15 +47,33 @@ class Albumi(models.Model):
 
     __unicode__ = nimi
 
-    def save(self, *args, **kwargs):
-        while 1:
-            code = str(random.random())[2:]
-            try:
-                Albumi.objects.get(julkinenUrlID=code)
-            except:
-                self.julkinenUrlID = code
-                break
-        super(Albumi, self).save(*args, **kwargs)
+    def save(self):
+        if not self.id:
+            while 1:
+                code = str(random.random())[2:]
+                try:
+                    Albumi.objects.get(julkinenUrlID=code)
+                except:
+                    self.julkinenUrlID = code
+                    break
+
+        super(Albumi, self).save()
+
+
+    def toJson(self):
+        jsonData = {'id': self.id,
+                    'nimi': self.nimi,
+                    'julkinen': self.julkinen,
+                    'koko_x': self.koko_x,
+                    'koko_y': self.koko_y}
+        jsonData['sivut'] = []
+
+        sivut = self.sivut.all()
+        jsonData['sivut'] = [sivu.toJson() for sivu in sivut]
+
+
+        return json.dumps(jsonData)
+
 
 
 class Sivu(models.Model):
@@ -61,6 +81,15 @@ class Sivu(models.Model):
     sivunumero = models.PositiveIntegerField()
 
     # TODO: asetteluTyyppi
+
+    def toJson(self):
+        elementit = self.elementit.all()
+        s = {'id': self.pk,
+             'sivunumero': self.sivunumero,
+             'elementit': [elementti.toJson() for elementti in elementit]}
+
+        return s
+
     class Meta:
         ordering = ['sivunumero']
 
@@ -70,15 +99,24 @@ class Kuva(models.Model):
 
     kayttaja = models.ForeignKey(User, null=True, blank=True)
     url = models.URLField()
-    nimi = models.CharField(max_length=100)
-
-
+    nimi = models.CharField(max_length=100, blank=True)
 
     # TODO: tageja. Taggit applikaatio tekee tämän helposti. Käytetäänkö sitä?
+
+    def toJson(self):
+        return {'id': self.pk,
+                 'url': self.url,
+                 'nimi': self.nimi}
+
 
 
 class Teksti(models.Model):
     teksti = models.TextField()
+
+    def toJson(self):
+        return {'id': self.pk,
+                'teksti': self.teksti}
+
 
 
 class SivunElementti(models.Model):
@@ -101,8 +139,26 @@ class SivunElementti(models.Model):
     # TODO: kiertokulma
     # TODO: sisällön muotoilu (venytys, ankkuripiste, kiertokulma, tekstin fontti ja koko)
 
+    def toJson(self):
+        e = {'id': self.pk,
+             'x': self.ankkuripiste_x,
+             'y': self.ankkuripiste_y,
+             'z': self.z,
+             'koko_x': self.koko_x,
+             'koko_y': self.koko_y,
+             'kuva': None,
+             'teksti': None
+             }
+        if self.kuva:
+            e['kuva'] = self.kuva.toJson()
+        if self.teksti:
+            e['teksti'] = self.teksti.toJson()
+
+        return e
+
     class Meta:
         ordering = ['z']
+
 
 
 class Tilaus(models.Model):

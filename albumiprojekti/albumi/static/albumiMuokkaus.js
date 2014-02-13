@@ -1,5 +1,6 @@
 var albumi;
 var carouselStage, carouselNavigation;
+var dragSrcEl = null;
 
 function luoAlbumi(json){
 	albumi = new MuokattavaAlbumi(json);
@@ -11,8 +12,9 @@ function luoAlbumi(json){
 		canvas.addEventListener('dragover', handleDragOver, false);
 		canvas.addEventListener('drop', handleDrop, false);
 	});
+	
 }
-var dragSrcEl = null;
+
 function handleDragStart(e) {
     e.dataTransfer.effectAllowed = 'copy'; // only dropEffect='copy' will be dropable
     e.dataTransfer.setData('Text', this.id); // required otherwise doesn't work
@@ -48,7 +50,8 @@ function handleDrop(e) {
 
 	var el = document.getElementById(e.dataTransfer.getData('Text'));
 	var url = dragSrcEl.getAttribute("src");
-	var kuvanNimi = $(dragSrcEl).siblings('input').val();
+	var kuvanNimi = $(dragSrcEl).siblings('input.kuvanNimi').val();
+	var kuvanId = $(dragSrcEl).siblings('input.kuvanId').val();
 	var sivunumero = parseInt(this.id.slice(10));
 	var sivu = albumi.sivut[sivunumero];
 	
@@ -62,17 +65,22 @@ function handleDrop(e) {
 	var korkeus = leveys * aspect;
 
 	var elementti = {
-			"id": null,
-			"kuva": {
-				"url": url,
-				"nimi": kuvanNimi
+			kuva: {
+				url: url
 			},
-			"y": mouse.y-korkeus/2,
-			"x": mouse.x-leveys/2,
-			"z": z+1,
-			"koko_y": korkeus,
-			"koko_x": leveys
+			y: mouse.y-korkeus/2,
+			x: mouse.x-leveys/2,
+			z: z+1,
+			koko_y: korkeus,
+			koko_x: leveys
 	};
+	
+	if (typeof kuvanId !== 'undefined') {
+		elementti.kuva.id = parseInt(kuvanId);
+	}
+	if (typeof kuvanNimi !== 'undefined') {
+		elementti.kuva.nimi = kuvanNimi;
+	}
 	
 	sivu.lisaaElementti(elementti, sivu.elementtiValmis);
 }
@@ -98,10 +106,85 @@ function lataaKuva(e){
 	kuvaInput.val('');
 }
 
+function paivitaTalletettu(json){
+	console.log("Tallennettu!!!!!")
+	console.log(json);
+	
+	albumi.id = json.id;
+	for (var i=0; i< json.sivut.length; i++){
+		var sivu = json.sivut[i];
+		albumi.sivut[i].id = sivu.id;
+		
+		for (var j=0; j< sivu.elementit.length; j++){
+			var elementti = sivu.elementit[j];
+			albumi.sivut[i].elementit[j].id = elementti.id;
+			albumi.sivut[i].elementit[j].kuva.id = elementti.kuva.id;
+		}
+	}
+}
+
+function tallenna(e){
+
+	var json = JSON.stringify(albumi);
+	
+	$.ajax({
+		  type: "POST",
+		  url: "albumi/tallenna",
+		  data: json,
+		  success: paivitaTalletettu
+	});
+}
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+function sameOrigin(url) {
+    // test that a given url is a same-origin URL
+    // url could be relative or scheme relative or absolute
+    var host = document.location.host; // host + port
+    var protocol = document.location.protocol;
+    var sr_origin = '//' + host;
+    var origin = protocol + sr_origin;
+    // Allow absolute or scheme relative URLs to same origin
+    return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+        (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+        // or any other URL that isn't scheme relative or absolute i.e relative.
+        !(/^(\/\/|http:|https:).*/.test(url));
+}
+
+function uusiSivu(){
+	var sivuja = albumi.sivut.length;
+
+	albumi.lisaaSivu(sivuja, 
+			{
+		elementit: [],
+		width: albumi.koko_x,
+		height: albumi.koko_y,
+		sivunumero: sivuja
+		},
+		albumi.sivuValmis);
+	
+	var sivu = albumi.sivut[sivuja];
+	
+	sivu.canvas.addEventListener('dragenter', handleDragEnter, false);
+	sivu.canvas.addEventListener('dragleave', handleDragLeave, false);
+	sivu.canvas.addEventListener('dragover', handleDragOver, false);
+	sivu.canvas.addEventListener('drop', handleDrop, false);
+	
+	
+	$('<li>', {html: sivu.canvas}).appendTo($('.carousel-stage ul'));
+	$('<li>').html(
+		$('<div>', {'width':'70px', 'height': '50px'}).html(
+			$('<p>').text(sivuja+1)
+		)
+	).appendTo($('.carousel-navigation ul'));
+
+	$('#sivunumeroYht').text(sivuja+1);
+	reloadCarousel();
+}
+
 $( document ).ready(function() {
-	initJCarousel();
-	$('.carousel-stage').on('jcarousel:animateend', paivitaSivunumero);
-	$.getJSON("albumi/albumi/"+1+".json", luoAlbumi);
 	var kuvat = $('.raahattavaKuva');
 	$.each(kuvat, function(i, kuva){
 		kuva.addEventListener('dragstart', handleDragStart, false);
@@ -109,4 +192,22 @@ $( document ).ready(function() {
 	});
 	
 	$('#lisaaKuvaButton').click(lataaKuva);
+	$('#tallennaButton').click(tallenna);
+	$('#lisaaSivuButton').click(uusiSivu);
+	$('#albumiNimi').change(function(){
+		var nimi = $(this).val()
+		albumi.nimi = nimi;
+		});
+	
+	var csrftoken = $.cookie('csrftoken');
+	$.ajaxSetup({
+	    beforeSend: function(xhr, settings) {
+	        if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+	            // Send the token to same-origin, relative URLs only.
+	            // Send the token only if the method warrants CSRF protection
+	            // Using the CSRFToken value acquired earlier
+	            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+	        }
+	    }
+	});
 });

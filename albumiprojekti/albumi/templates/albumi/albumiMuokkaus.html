@@ -3,6 +3,8 @@
 
 {% block includes %}
 <link rel="stylesheet" href="{% static 'css/albumiCarousel.css' %}">
+
+<script type="text/javascript" src="{% static 'jquery/jquery.cookie.js' %}"></script>
 <script type="text/javascript" src="{% static 'jcarousel/jquery.jcarousel.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'jcarousel.connected-carousels.js' %}"></script>
@@ -12,6 +14,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="container">
 	<div class="row">
 	    <div class="col-lg-3 sidebar">
@@ -21,7 +24,8 @@
 	            {% for kuva in kuvat %}
 		        <div class="col-lg-6 thumbnail">
 					<img class="raahattavaKuva img-responsive" src="{{ kuva.url }}" draggable="true">
-					<h5><input class="muokattavaTeksti" type="text" value="{{ kuva.nimi }}"></h5>
+					<input class="muokattavaTeksti kuvanNimi" type="text" value="{{ kuva.nimi }}">
+					<input class="kuvanId" type="hidden" value="{{ kuva.id }}" readonly>
 	            </div>
 				{% endfor %}
 	        </div>
@@ -50,10 +54,25 @@
 	            </div>
 	            <div>
 	               <button id="lisaaSivuButton" type="button" class="btn btn-success">Lisää sivu<span class="glyphicon glyphicon-plus"></span></button>
-	               <button id="tallenna" type="button" class="btn btn-primary pull-right">Tallenna</button>
+	               <button id="tallennaButton" type="button" class="btn btn-primary pull-right">Tallenna</button>
 	            </div>
 	        </div>
 		</div>
 	</div>
 </div>
+
+<script>
+{% if albumi %}
+    $.getJSON("{% url 'albumi.views.albumJson' albumi.id %}", luoAlbumi);
+{% else %}
+luoAlbumi({
+	koko_x: 600,
+	koko_y: 424,
+	julkinen: false,
+	sivut:[{sivunumero:0, elementit:[]}]
+	}
+);
+{% endif %}
+</script>
+
 {% endblock %}

@@ -1,3 +1,31 @@
+function Kuva(kuva, callback){
+	if (arguments.length == 0) return;
+	
+	var kuvaObject = this;
+	
+	this.id = kuva.id;
+	this.url = kuva.url;
+	this.nimi = kuva.nimi;
+	
+	this.image = new Image();
+	this.image.onload = function() {
+		console.log("Kuva "+kuvaObject.id+" latautunut.");
+		if(typeof callback !== 'undefined'){
+			callback();
+		}
+	};
+	this.image.src = this.url;
+}
+
+Kuva.prototype.toJSON = function(){
+	var json = {
+		id: this.id,
+		nimi: this.nimi,
+		url : this.url
+	}
+	return json;
+}
+
 function Elementti(elementti, callback) {
 	if (arguments.length == 0) return;
 	
@@ -11,17 +39,15 @@ function Elementti(elementti, callback) {
 	this.width = elementti.koko_x;
 	this.height = elementti.koko_y;
 	this.aspect = this.height / this.width;
-	this.kuvanid = elementti.kuva.id;
-	this.kuvanNimi = elementti.kuva.nimi;
-	this.image = new Image();
-
-	this.image.onload = function() {
-		console.log("Elementti "+elementtiObject.id+" latautunut.");
+	
+	this.kuvaValmis = function(){
+		console.log("Elementti "+elementtiObject.id+" valmis.");
 		if(typeof callback !== 'undefined'){
 			callback();
 		}
 	};
-	this.image.src = elementti.kuva.url;
+	
+	this.kuva = new Kuva(elementti.kuva, this.kuvaValmis);
 };
 Elementti.prototype.toJSON = function(){
 	var json = {
@@ -30,12 +56,21 @@ Elementti.prototype.toJSON = function(){
 		x: this.x,
 		y: this.y,
 		z: this.z,
-		kuva : {url: this.image.src, id: this.kuvanid, nimi: this.kuvanNimi},
+		kuva : this.kuva,
 		koko_x: this.width,
 		koko_y: this.height
 	}
 	return json;
 }
+Elementti.prototype.draw = function(ctx){
+	ctx.drawImage(
+			this.kuva.image,
+			this.x,
+			this.y,
+			this.width,
+			this.height);
+};
+
 
 function Sivu(sivu, callback){
 	if (arguments.length == 0) return;
@@ -46,15 +81,9 @@ function Sivu(sivu, callback){
 	this.elementtiValmis = function(){
 		elementtejaValmiina++;
 		if (elementtejaValmiina >= elementteja) {
-			for (var i =0; i < sivuObject.elementit.length; i++){
-				var elementti = sivuObject.elementit[i];
-				sivuObject.context.drawImage(elementti.image,
-						elementti.x,
-						elementti.y,
-						elementti.width,
-						elementti.height);
-			}
-			console.log("Sivu "+sivuObject.id+" valmis!");
+			console.log("Sivu "+(sivuObject.sivunumero+1)+" valmis!");
+			sivuObject.draw();
+			sivuObject.valid = false;
 			if(typeof callback !== 'undefined'){
 				callback();
 			}
@@ -104,7 +133,12 @@ Sivu.prototype.thumb = function() {
 	});
 	return img;
 };
-
+Sivu.prototype.draw = function(){
+	for (var i =0; i < this.elementit.length; i++){
+		var elementti = this.elementit[i];
+		elementti.draw(this.context);
+	}
+}
 
 function Albumi(json, callback) {
 	if (arguments.length == 0) return;
@@ -114,6 +148,7 @@ function Albumi(json, callback) {
 	this.sivut = [];
 	this.id = json.id;
 	this.nimi = json.nimi;
+	this.julkinen = json.julkinen;
 	this.koko_x = json.koko_x;
 	this.koko_y = json.koko_y;
 	
@@ -123,7 +158,6 @@ function Albumi(json, callback) {
 		sivujavalmiina++;
 		if (sivujavalmiina >= sivuja) {
 			console.log("Koko albumi valmis!");
-			console.log(JSON.stringify(albumiObject));
 			if(typeof callback !== 'undefined'){
 				callback();
 			}
@@ -146,6 +180,7 @@ Albumi.prototype.toJSON = function(){
 	var json = {
 		id: this.id,
 		nimi: this.nimi,
+		julkinen: this.julkinen,
 		koko_x: this.koko_x,
 		koko_y: this.koko_y,
 		sivut : this.sivut
@@ -154,20 +189,23 @@ Albumi.prototype.toJSON = function(){
 }
 
 function lisaaAlbumi(){
+	var stageUl = $('.carousel-stage ul');
+	var NavUl = $('.carousel-navigation ul');
 	var sivuja = albumi.sivut.length;
 	for (var sivunumero = 0; sivunumero < sivuja; sivunumero++) {
 		var sivu = albumi.sivut[sivunumero];
-		$('<li>', {html: sivu.canvas}).appendTo($('.carousel-stage ul'));
+		$('<li>', {html: sivu.canvas}).appendTo(stageUl);
 		$('<li>').html(
 			$('<div>', {'width':'70px', 'height': '50px'}).html(
 				$('<p>').text(sivunumero+1)
 			)
-		).appendTo($('.carousel-navigation ul'));
+		).appendTo(NavUl);
     }
 	$('#sivunumeroYht').text(sivuja);
+	initJCarousel();
+	$('.carousel-stage').on('jcarousel:animateend', paivitaSivunumero);
 	reloadCarousel();
 };
-
 
 function paivitaThumbnailit(){
 	// TODO Ei nyt toiminutkaan kun tulee cors error
