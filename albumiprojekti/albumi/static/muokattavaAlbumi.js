@@ -3,10 +3,8 @@ var valintaWidth = 2;
 var dragBoxSize = 6;
 var interval = 30;
 
-function MuokattavaElementti(elementti, parentContext, callback){
+function MuokattavaElementti(elementti, callback){
 	Elementti.apply(this, arguments);
-	
-
 }
 MuokattavaElementti.prototype = new Elementti();
 MuokattavaElementti.prototype.constructor = MuokattavaElementti;
@@ -37,14 +35,6 @@ MuokattavaElementti.prototype.containsDrag = function(mx,my, tolerance) {
 		if ((h.x - tolerance <= mx) && (h.x + dragBoxSize +tolerance >= mx) && (h.y - tolerance <= my) && (h.y + dragBoxSize + tolerance >= my)) return i;
 	}
 	return false;
-};
-MuokattavaElementti.prototype.draw = function(ctx){
-	ctx.drawImage(
-			this.image,
-			this.x,
-			this.y,
-			this.width,
-			this.height);
 };
 
 MuokattavaElementti.prototype.drawValinta  = function(ctx) {
@@ -245,8 +235,8 @@ MuokattavaSivu.prototype.draw = function() {
     this.valid = true;
   }
 };
-Sivu.prototype.lisaaElementti = function(elementti, callback) {
-	this.elementit.push(new MuokattavaElementti(elementti, this.context, callback));
+MuokattavaSivu.prototype.lisaaElementti = function(elementti, callback) {
+	this.elementit.push(new MuokattavaElementti(elementti, callback));
 };
 MuokattavaSivu.prototype.tyhjenna = function(){
 	this.context.clearRect(0, 0, this.width, this.height);

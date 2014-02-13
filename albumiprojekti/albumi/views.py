@@ -1,6 +1,8 @@
-from django.shortcuts import render, render_to_response, get_object_or_404, RequestContext
+# -*- coding: utf-8 -*-
+
+from django.shortcuts import render, get_object_or_404
 from django.http import Http404, HttpResponse, HttpRequest, HttpResponseBadRequest, HttpResponseRedirect
-from django.contrib.auth import authenticate
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
@@ -13,22 +15,37 @@ import json
 
 
 def index(request):
-    return render_to_response("albumi/index.html")
+    return render(request, "albumi/index.html")
+
+
+def albumit(request):
+    user = request.user
+    if user.is_authenticated():
+        albumit = Albumi.objects.filter(kayttaja=user)
+    else:
+        albumit = Albumi.objects.filter(julkinen=True)
+
+    return render(request, 'albumi/albumit.html', {'albumit': albumit})
 
 
 def albumi(request, albumiId):
-    albumi = get_object_or_404(Albumi, pk=albumiId)
+    user = request.user
+    albumi = get_object_or_404(Albumi, julkinenUrlID=albumiId)
+    if albumi.julkinen or (user.is_authenticated() and albumi.kayttaja == user):
+        return render(request, 'albumi/albumi.html', {'albumi': albumi})
+    else:
+        return render(request, 'registration/login.html')
 
-    albumit = Albumi.objects.all()
-    return render(request, 'albumi/albumi.html', {'albumi': albumi,
-                                                  'albumit': albumit})
 
 @login_required
 def albumiMuokkaus(request, albumiId):
     user = request.user
+    if albumiId == 'uusi':
+        albumi = None
+    else:
+        albumi = get_object_or_404(Albumi, julkinenUrlID=albumiId)
 
-    albumi = get_object_or_404(Albumi, pk=albumiId)
-    if albumi.kayttaja == user:
+    if albumi is None or albumi.kayttaja == user:
         kuvat = Kuva.objects.filter(kayttaja=user)
         return render(request, 'albumi/albumiMuokkaus.html', {'albumi': albumi,
                                                               'kuvat': kuvat})
@@ -36,55 +53,92 @@ def albumiMuokkaus(request, albumiId):
         return HttpResponse("Ei oikeuksia kyseiseen albumiin.")
 
 
-def albumJson(request, albumiId, sivunumero=None):
-    albumi = get_object_or_404(Albumi, pk=albumiId)
-    jsonData = {'id': albumi.id,
-                'nimi': albumi.nimi,
-                'koko_x': albumi.koko_x,
-                'koko_y': albumi.koko_y}
-    jsonData['sivut'] = []
-    if sivunumero:
-        sivut = albumi.sivut.filter(sivunumero=sivunumero)
+def albumJson(request, albumiId):
+    if albumiId == 'uusi':
+        jsonData = json.dumps({})
     else:
-        sivut = albumi.sivut.all()
-    for sivu in sivut:
-        s = {'id': sivu.pk,
-             'sivunumero': sivu.sivunumero,
-             'elementit': []}
-        elementit = sivu.elementit.all()
-        for elementti in elementit:
-            e = {'id': elementti.pk,
-                 'x': elementti.ankkuripiste_x,
-                 'y': elementti.ankkuripiste_y,
-                 'z': elementti.z,
-                 'koko_x': elementti.koko_x,
-                 'koko_y': elementti.koko_y,
-                 'kuva': None,
-                 'teksti': None
-                 }
-            if elementti.kuva:
-                e['kuva'] = {'id': elementti.kuva.pk,
-                             'url': elementti.kuva.url}
+        albumi = get_object_or_404(Albumi, pk=albumiId)
+        jsonData = albumi.toJson()
 
-            if elementti.teksti:
-                e['teksti'] = {'id': elementti.teksti.pk,
-                               'teksti': elementti.teksti.teksti}
-
-            s['elementit'].append(e)
-
-        jsonData['sivut'].append(s)
-
-    jsonData = json.dumps(jsonData)
     callback = request.GET.get('callback', None)
     if callback:
         jsonData = u'{0}({1})'.format(callback, jsonData)
     return HttpResponse(jsonData, content_type="application/json")
 
 
-def rekisteroityminen(request):
-    # Like before, get the request's context.
-    context = RequestContext(request)
+@login_required
+@require_http_methods(["POST"])
+def tallennus(request):
+    if not request.is_ajax():
+        return HttpResponse("Ei ajax")
 
+    user = request.user
+
+    jsonIn = request.body
+    albumiData = json.loads(jsonIn)
+    if 'id' in albumiData:
+        albumi = Albumi.objects.get(pk=albumiData['id'])
+    else:
+        albumi = Albumi()
+    if 'nimi' in albumiData:
+        nimi = albumiData['nimi']
+    else:
+        nimi = u'Nimetön'
+    albumi.nimi = nimi
+    albumi.kayttaja = user
+    albumi.koko_x = albumiData['koko_x']
+    albumi.koko_y = albumiData['koko_y']
+    albumi.save()
+
+    for sivuData in albumiData['sivut']:
+        if 'id' in sivuData:
+            sivu = Sivu.objects.get(pk=sivuData['id'])
+        else:
+            sivu = Sivu()
+
+        sivu.sivunumero = sivuData['sivunumero']
+        sivu.albumi = albumi
+        sivu.save()
+
+        for elementtiData in sivuData['elementit']:
+            if 'id' in elementtiData and  elementtiData['id'] is not None:
+                elementti = SivunElementti.objects.get(pk=elementtiData['id'])
+            else:
+                elementti = SivunElementti()
+            elementti.ankkuripiste_x = elementtiData['x']
+            elementti.ankkuripiste_y = elementtiData['y']
+            elementti.z = elementtiData['z']
+            elementti.koko_x = float(elementtiData['koko_x'])
+            elementti.koko_y = float(elementtiData['koko_y'])
+
+            if 'kuva' in elementtiData:
+                kuvaData = elementtiData['kuva']
+                if 'id' in kuvaData:
+                    kuva = Kuva.objects.get(pk=kuvaData['id'])
+                else:
+                    kuva = Kuva()
+                kuva.url = kuvaData['url']
+                if 'nimi' in kuvaData:
+                    kuva.nimi = kuvaData['nimi']
+                kuva.kayttaja = user
+                kuva.save()
+
+            elementti.kuva = kuva
+            elementti.sivu = sivu
+
+            elementti.save()
+
+    jsonData = albumi.toJson()
+
+    callback = request.GET.get('callback', None)
+    if callback:
+        jsonData = u'{0}({1})'.format(callback, jsonData)
+
+    return HttpResponse(jsonData, content_type="application/json")
+
+
+
+def rekisteroityminen(request):
     # A boolean value for telling the template whether the registration was successful.
     # Set to False initially. Code changes value to True when registration succeeds.
     registered = False
@@ -131,16 +185,12 @@ def rekisteroityminen(request):
         profile_form = KayttajaForm()
 
     # Render the template depending on the context.
-    return render_to_response(
-            'registration/rekisterointi.html',
-            {'user_form': user_form, 'profile_form': profile_form, 'registered': registered},
-            context)
+    return render(request, 'registration/rekisterointi.html', {'user_form': user_form,
+                                                               'profile_form': profile_form,
+                                                               'registered': registered})
 
 
 def user_login(request):
-    # Like before, obtain the context for the user's request.
-    context = RequestContext(request)
-
     # If the request is a HTTP POST, try to pull out the relevant information.
     if request.method == 'POST':
         # Gather the username and password provided by the user.
@@ -175,4 +225,4 @@ def user_login(request):
     else:
         # No context variables to pass to the template system, hence the
         # blank dictionary object...
-        return render_to_response('registration/login.html', {}, context)
+        return render(request, 'registration/login.html')

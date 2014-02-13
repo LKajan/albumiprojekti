@@ -13,21 +13,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-3 sidebar">
-        <h4>Albumit</h4>
-        <div class="row" id="albumilista">
-            {% for albumi in albumit %}
-	        <div class="col-lg-6">
-	           <div class="thumbnail">
-					<img class="img-thumbnail" src="" width="150px" height="100px">
-					<h6 ><a href="{% url 'albumi.views.albumi' albumi.id %}">{{ albumi.nimi }}</a></h6>
-                </div>
-            </div>
-			{% endfor %}
-        </div>
-    </div>
-    <div class="col-lg-9 main">
+<div class="container">
+	<div class="row">
 		<h1>{{ albumi.nimi }}</h1>
         <div class="connected-carousels">
             <div class="stage">
@@ -48,7 +35,16 @@
                 </div>
             </div>
         </div>
+        {% if user.is_authenticated %}
+        <a href="{% url 'albumi.views.albumiMuokkaus' albumi.julkinenUrlID %}" class="btn btn-primary" role="button">Muokkaa</a>
+        {% endif %}
 	</div>
 </div>
+
+<script>
+{% if albumi %}
+    $.getJSON("{% url 'albumi.views.albumJson' albumi.id %}", luoAlbumi);
+{% endif %}
+</script>
 
 {% endblock %}

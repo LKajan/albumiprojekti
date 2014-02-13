@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block includes %}
+<!-- Omat js-koodit -->
+<script type="text/javascript" src="{% static 'albumi.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!--div class="row">
+	    
+	    <div>
+	        <form role="form">
+	           <input type="text" class="form-control" placeholder="Etsi...">
+	        </form>
+	    </div>
+	</div-->
+    <div class="row" id="albumilista">
+        <h2>Albumit</h2>
+        {% for albumi in albumit %}
+        <div class="col-md-2">
+           <div class="thumbnail">
+                <img src="" class="img-responsive" id="albumiKansi{{ albumi.id }}" width="150px" height="100px">
+                <h6><a href="{% url 'albumi.views.albumi' albumi.julkinenUrlID %}">{{ albumi.nimi }}</a></h6>
+            </div>
+        </div>
+        {% empty %}
+        <p>Ei näytettäviä albumeita</p>
+        {% endfor %}
+    </div>
+    {% if user.is_authenticated %}
+    <a href="{% url 'albumi.views.albumiMuokkaus' 'uusi' %}" class="btn btn-success" role="button">Lisää <span class="glyphicon glyphicon-plus"></span></a>
+    {% endif %}
+</div>
+{% endblock %}
