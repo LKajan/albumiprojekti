@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import Http404, HttpResponse, HttpRequest, HttpResponseBadRequest, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import authenticate, login, logout
@@ -18,9 +18,9 @@ def index(request):
     return render(request, "albumi/index.html")
 
 
-def albumit(request):
+def albumit(request, julkiset=None):
     user = request.user
-    if user.is_authenticated():
+    if user.is_authenticated() and julkiset is None:
         albumit = Albumi.objects.filter(kayttaja=user)
     else:
         albumit = Albumi.objects.filter(julkinen=True)
@@ -88,6 +88,7 @@ def tallennus(request):
     albumi.kayttaja = user
     albumi.koko_x = albumiData['koko_x']
     albumi.koko_y = albumiData['koko_y']
+    albumi.julkinen = albumiData['julkinen']
     albumi.save()
 
     for sivuData in albumiData['sivut']:
@@ -136,7 +137,14 @@ def tallennus(request):
 
     return HttpResponse(jsonData, content_type="application/json")
 
-
+@login_required
+def poista(request, albumiId):
+    albumi = Albumi.objects.get(pk=albumiId)
+    if albumi.kayttaja == request.user:
+        albumi.delete()
+        return redirect('albumi.views.albumit')
+    else:
+        return HttpResponse("Ei oikeuksia albumiin")
 
 def rekisteroityminen(request):
     # A boolean value for telling the template whether the registration was successful.

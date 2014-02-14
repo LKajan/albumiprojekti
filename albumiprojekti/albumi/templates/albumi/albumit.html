@@ -21,8 +21,17 @@
         {% for albumi in albumit %}
         <div class="col-md-2">
            <div class="thumbnail">
-                <img src="" class="img-responsive" id="albumiKansi{{ albumi.id }}" width="150px" height="100px">
-                <h6><a href="{% url 'albumi.views.albumi' albumi.julkinenUrlID %}">{{ albumi.nimi }}</a></h6>
+                {% if user.is_authenticated and albumi.kayttaja == user %}
+                <div class="pull-right">
+                    <a href="{% url 'albumi.views.albumiMuokkaus' albumi.julkinenUrlID %}" type="button" class="btn btn-primary btn-xs" title="Muokkaa"><span class="glyphicon glyphicon-pencil"></span></a><br>
+                    <a href="{% url 'albumi.views.poista' albumi.id %}" type="button" class="btn btn-danger btn-xs" title="Poista"><span class="glyphicon glyphicon-remove"></span></a>
+                </div>
+                {% endif %}
+                <!-- img src="" class="img-responsive" id="albumiKansi{{ albumi.id }}" width="150px" height="100px" -->
+                <h5><a href="{% url 'albumi.views.albumi' albumi.julkinenUrlID %}">{{ albumi.nimi }}</a></h5>
+                {% if albumi.kayttaja != user %}
+                <p class="small">Luonut: {{ albumi.kayttaja.username }}</p>
+                {% endif %}
             </div>
         </div>
         {% empty %}

@@ -5,6 +5,7 @@ var dragSrcEl = null;
 function luoAlbumi(json){
 	albumi = new MuokattavaAlbumi(json);
 	lisaaAlbumi();
+	$('#julkinenCheckbox').attr('checked', albumi.julkinen);
 	var canvakset = $('.carousel-stage ul li canvas');
 	$.each(canvakset, function(i, canvas){
 		canvas.addEventListener('dragenter', handleDragEnter, false);
@@ -107,7 +108,10 @@ function lataaKuva(e){
 }
 
 function paivitaTalletettu(json){
-	console.log("Tallennettu!!!!!")
+	console.log("Tallennettu!!!!!");
+	var currentdate = new Date();
+	$('#tallennettuAika').text('Tallennettu '+currentdate.getHours()+':'+currentdate.getMinutes());
+	$('#tallennettuAika').show();
 	console.log(json);
 	
 	albumi.id = json.id;
@@ -198,6 +202,9 @@ $( document ).ready(function() {
 		var nimi = $(this).val()
 		albumi.nimi = nimi;
 		});
+	$('#julkinenCheckbox').click(function () {
+	    albumi.julkinen = this.checked;
+	});
 	
 	var csrftoken = $.cookie('csrftoken');
 	$.ajaxSetup({

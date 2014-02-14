@@ -54,8 +54,21 @@
 	            </div>
 	            <div>
 	               <button id="lisaaSivuButton" type="button" class="btn btn-success">Lisää sivu<span class="glyphicon glyphicon-plus"></span></button>
-	               <button id="tallennaButton" type="button" class="btn btn-primary pull-right">Tallenna</button>
+	               <div class="pull-right">
+	               <button id="tallennaButton" type="button" class="btn btn-primary">Tallenna</button><br>
+	               <span style="display: none" id="tallennettuAika" class="small">Tallennettu</span>
+	               </div>
 	            </div>
+				  <div class="checkbox">
+				    <label>
+				      <input id="julkinenCheckbox" type="checkbox"> Albumi on julkinen.
+				    </label>
+				  </div>
+				  {% if albumi %}
+				  <div>
+				    <a href="{% url 'albumi.views.poista' albumi.id %}" type="button" class="btn btn-danger btn-xs">Poista albumi</a>
+				  </div>
+				  {% endif %}
 	        </div>
 		</div>
 	</div>
