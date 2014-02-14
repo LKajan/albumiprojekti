@@ -14,6 +14,10 @@ Projektisuunnitelma
 Projekti on vasta suunnittelu / toteutusvaiheessa.
 Projektisuunnitelman löydät [docs/projectplan.md](docs/projectplan.md)
 
+Projektiraportti
+---------------
+Projektiraportin löytyy täältä [docs/projektiraportti.md](docs/projektiraportti.md)
+
 
 Kehitys
 ---------------
