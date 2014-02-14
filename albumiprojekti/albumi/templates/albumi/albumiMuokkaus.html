@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
+{% block title %}
+    Albumi.fi - Muokkaa - {{ albumi.nimi }}
+{% endblock %}
+
+
 {% block includes %}
 <link rel="stylesheet" href="{% static 'css/albumiCarousel.css' %}">
 
@@ -12,6 +17,8 @@
 <script type="text/javascript" src="{% static 'muokattavaAlbumi.js' %}"></script>
 <script type="text/javascript" src="{% static 'albumiMuokkaus.js' %}"></script>
 {% endblock %}
+
+
 
 {% block content %}
 

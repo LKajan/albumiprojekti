@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
+{% block title %}
+    Albumi.fi - {{ albumi.nimi }}
+{% endblock %}
+
 {% block includes %}
 <link rel="stylesheet" href="{% static 'css/albumiCarousel.css' %}">
 <script type="text/javascript" src="{% static 'jcarousel/jquery.jcarousel.js' %}"></script>
