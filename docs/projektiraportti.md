@@ -11,11 +11,7 @@ olen tehnyt yksin. Tästä syystä ohjelmasta puuttuu monia merkittäviä ja suu
 Jopa muutamia tehtävänannossa pakollisiksi merkittyjä.
 
 ### Heroku applikaatio
-http://secret-escarpment-7082.herokuapp.com/albumi/
-
-Projekti on julkaistu herokussa, mutta siinä on vielä kirjoitushetkellä jotakin ongelmaa 
-staattisten tiedostojen
-kanssa.
+http://albumi.herokuapp.com/
 
 
 ## Ohjelman ominaisuudet
